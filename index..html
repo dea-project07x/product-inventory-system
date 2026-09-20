@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品情報管理システム (Product Information System)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font Noto Sans JP -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 p-6">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 border-b-2 border-indigo-600 pb-4">
+            <h1 class="text-3xl font-bold text-indigo-900">商品情報管理システム</h1>
+            <p class="text-sm text-gray-600">Product Information Management System</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Input / Edit 商品登録フォーム -->
+            <div class="bg-white p-6 rounded-lg shadow-md h-fit">
+                <h2 id="form-title" class="text-xl font-bold mb-4 text-indigo-700 border-b pb-2">新規商品登録 (Tambah Produk Baru)</h2>
+                
+                <form id="product-form" onsubmit="saveProduct(event)">
+                    <input type="hidden" id="product-id">
+
+                    <!-- Nama Produk (商品名) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">商品名 <span class="text-red-500">*</span></label>
+                        <input type="text" id="product-name" required placeholder="例: ノートパソコン"
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <!-- Kategori (カテゴリ) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">カテゴリ <span class="text-red-500">*</span></label>
+                        <select id="product-category" required
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-indigo-500">
+                            <option value="">選択してください (Pilih)</option>
+                            <option value="電化製品">電化製品 (Elektronik)</option>
+                            <option value="食品・飲料">食品・飲料 (Makanan/Minuman)</option>
+                            <option value="衣類・ファッション">衣類・ファッション (Pakaian)</option>
+                            <option value="日用品・雑貨">日用品・雑貨 (Kebutuhan Harian)</option>
+                        </select>
+                    </div>
+
+                    <!-- Harga (価格 - 円) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">価格 (￥) <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-price" min="0" required placeholder="例: 120000"
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <!-- Stok (在庫数) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">在庫数 <span class="text-red-500">*</span></label>
+                        <input type="number" id="product-stock" min="0" required placeholder="例: 15"
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <!-- Deskripsi (商品説明) -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">商品説明</label>
+                        <textarea id="product-desc" rows="3" placeholder="商品の詳細を入力してください..."
+                            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-indigo-500"></textarea>
+                    </div>
+
+                    <!-- Tombol Action -->
+                    <div class="flex gap-2">
+                        <button type="submit" id="btn-save"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded font-medium transition">
+                            保存する (Simpan)
+                        </button>
+                        <button type="button" id="btn-cancel" onclick="resetForm()" class="hidden w-full bg-gray-400 hover:bg-gray-500 text-white py-2 rounded font-medium transition">
+                            キャンセル (Batal)
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabel Daftar Produk 商品一覧 -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-indigo-700">商品一覧 (Daftar Produk)</h2>
+                    <span id="product-count" class="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-bold">全 0 件</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700 text-sm border-b">
+                                <th class="p-3">商品名 (Nama)</th>
+                                <th class="p-3">カテゴリ (Kategori)</th>
+                                <th class="p-3 text-right">価格 (Harga)</th>
+                                <th class="p-3 text-right">在庫 (Stok)</th>
+                                <th class="p-3 text-center">操作 (Aksi)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list" class="divide-y text-sm">
+                            <!-- Data produk akan muncul di sini secara dinamis -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let products = JSON.parse(localStorage.getItem('jp_products')) || [
+            { id: 1, name: "高性能ノートPC", category: "電化製品", price: 150000, stock: 5, desc: "Core i7搭載のノートパソコン" },
+            { id: 2, name: "緑茶ペットボトル 500ml", category: "食品・飲料", price: 160, stock: 120, desc: "国産茶葉100%使用" }
+        ];
+
+        function saveToStorage() {
+            localStorage.setItem('jp_products', JSON.stringify(products));
+        }
+
+        function renderProducts() {
+            const listEl = document.getElementById('product-list');
+            const countEl = document.getElementById('product-count');
+            listEl.innerHTML = '';
+
+            countEl.textContent = `全 ${products.length} 件`;
+
+            if (products.length === 0) {
+                listEl.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">商品データがありません。(Tidak ada data produk)</td></tr>`;
+                return;
+            }
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium">
+                        <div>${p.name}</div>
+                        <div class="text-xs text-gray-400">${p.desc || '-'}</div>
+                    </td>
+                    <td class="p-3"><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs">${p.category}</span></td>
+                    <td class="p-3 text-right font-mono">￥${p.price.toLocaleString()}</td>
+                    <td class="p-3 text-right ${p.stock < 10 ? 'text-red-500 font-bold' : ''}">${p.stock}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="editProduct(${p.id})" class="text-blue-600 hover:text-blue-800 mr-2">編集</button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:text-red-800">削除</button>
+                    </td>
+                `;
+                listEl.appendChild(tr);
+            });
+        }
+
+        function saveProduct(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('product-id').value;
+            const name = document.getElementById('product-name').value;
+            const category = document.getElementById('product-category').value;
+            const price = Number(document.getElementById('product-price').value);
+            const stock = Number(document.getElementById('product-stock').value);
+            const desc = document.getElementById('product-desc').value;
+
+            if (id) {
+                // Edit (編集)
+                const index = products.findIndex(p => p.id == id);
+                if (index !== -1) {
+                    products[index] = { id: Number(id), name, category, price, stock, desc };
+                }
+            } else {
+                // Tambah Baru (新規登録)
+                const newProduct = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    price,
+                    stock,
+                    desc
+                };
+                products.push(newProduct);
+            }
+
+            saveToStorage();
+            renderProducts();
+            resetForm();
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('product-id').value = product.id;
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-category').value = product.category;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-stock').value = product.stock;
+            document.getElementById('product-desc').value = product.desc;
+
+            document.getElementById('form-title').textContent = "商品情報の編集 (Edit Produk)";
+            document.getElementById('btn-save').textContent = "更新する (Perbarui)";
+            document.getElementById('btn-cancel').classList.remove('hidden');
+        }
+
+        function deleteProduct(id) {
+            if (confirm("本当にこの商品を削除しますか？\n(Apakah Anda yakin ingin menghapus produk ini?)")) {
+                products = products.filter(p => p.id !== id);
+                saveToStorage();
+                renderProducts();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('product-form').reset();
+            document.getElementById('product-id').value = '';
+            document.getElementById('form-title').textContent = "新規商品登録 (Tambah Produk Baru)";
+            document.getElementById('btn-save').textContent = "保存する (Simpan)";
+            document.getElementById('btn-cancel').classList.add('hidden');
+        }
+
+        // Jalankan saat pertama kali dibuka
+        renderProducts();
+    </script>
+</body>
+</html>
